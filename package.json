@@ -1,0 +1,26 @@
+{
+  "name": "circleci-workflow-visualizer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cytoscape": "^3.31.0",
+    "cytoscape-dagre": "^2.5.0",
+    "mermaid": "^11.4.1",
+    "typescript": "^5.7.3",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.21.8",
+    "@types/cytoscape-dagre": "^2.3.3",
+    "@types/node": "^22.10.7",
+    "vite": "^6.0.7"
+  }
+}

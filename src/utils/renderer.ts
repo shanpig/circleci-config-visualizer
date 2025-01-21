@@ -1,5 +1,5 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import { WorkflowGraph } from "../types/mermaid.js";
+import { WorkflowGraph } from "../types/cytoscape.js";
 import cytoscapeDagre from "cytoscape-dagre";
 
 cytoscape.use(cytoscapeDagre);

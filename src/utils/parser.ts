@@ -1,6 +1,6 @@
 import { parse } from "yaml";
 import { CircleCIConfig, Filters } from "../types/circleci.js";
-import { WorkflowGraph } from "../types/mermaid.js";
+import { WorkflowGraph } from "../types/cytoscape.js";
 import { ElementDefinition } from "cytoscape";
 
 function stringMatch(regex: string, text: string) {

@@ -28,9 +28,19 @@ function shouldIncludeJob(filters?: Filters, branchName = "") {
   }
 }
 
-export async function loadCircleCIConfig(filePath: string): Promise<CircleCIConfig> {
-  const fileResponse = await fetch(filePath);
-  const fileContent = await fileResponse.text();
+function readFile(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => resolve(event?.target?.result as string);
+    reader.onerror = (event) => reject(new Error("error loading yaml file"));
+
+    reader.readAsText(file);
+  });
+}
+
+export async function loadCircleCIConfig(file: File): Promise<CircleCIConfig> {
+  const fileContent = await readFile(file);
   const config = parse(fileContent) as CircleCIConfig;
   return config;
 }
@@ -85,7 +95,5 @@ export function parseWorkflowGraphElements(workflows: WorkflowGraph[]) {
     return acc;
   }, []);
 
-  return {
-    elements,
-  };
+  return elements;
 }

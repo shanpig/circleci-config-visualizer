@@ -33,8 +33,16 @@ export function renderWorkflowGraph({
   }
 
   cytoscape({
-    container: container,
+    minZoom: 0.3,
+    maxZoom: 2,
     elements,
+    container,
+    autoungrabify: true,
+    layout: {
+      name: "dagre",
+      // @ts-expect-error
+      rankDir: "LR",
+    },
     style: [
       // Node style
       {
@@ -76,12 +84,6 @@ export function renderWorkflowGraph({
         },
       },
     ],
-    layout: {
-      name: "dagre",
-      // @ts-expect-error
-      rankDir: "LR",
-    },
-    autoungrabify: true,
   });
 
   return { colors };

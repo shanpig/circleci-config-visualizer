@@ -1,8 +1,10 @@
-import { loadCircleCIConfig, parseWorkflows } from "./parser.js";
-import { getWorkflowGraphSyntax, renderLegends, renderWorkflowGraph } from "./renderer.js";
+import { loadCircleCIConfig, parseWorkflows, parseWorkflowGraphElements } from "./utils/parser.js";
+import { getRandomHexColors, renderLegends, renderWorkflowGraph } from "./utils/renderer.js";
 import { CircleCIConfig } from "./types/circleci.js";
 
 const configPath = "/workflow.yaml";
+const graphHolderId = "#graph-holder";
+const graphSyntaxHolderId = "#graph-syntax-holder";
 let config: CircleCIConfig;
 let graphSyntaxHolder: HTMLPreElement | null;
 let graphHolder: HTMLDivElement | null;
@@ -10,30 +12,35 @@ let graphHolder: HTMLDivElement | null;
 // Render the graph
 document.addEventListener("DOMContentLoaded", async () => {
   // Load and parse the config
-  graphSyntaxHolder = document.querySelector("#graph-syntax-holder");
-  graphHolder = document.querySelector("#graph-holder");
+  graphSyntaxHolder = document.querySelector(graphSyntaxHolderId);
+  graphHolder = document.querySelector(graphHolderId);
 
   if (graphSyntaxHolder && graphHolder) {
     config = await loadCircleCIConfig(configPath);
-    visualizeWorkflows(config, "master");
+    visualizeWorkflows({ branchName: "master" });
   }
 });
 
-function visualizeWorkflows(config: CircleCIConfig, branchName?: string) {
+function visualizeWorkflows({ branchName }: { branchName?: string }) {
   if (graphSyntaxHolder) {
+    // Parser
     const workflows = parseWorkflows(config, branchName);
 
     // Renderer
-    const { elements } = getWorkflowGraphSyntax(workflows);
+    const { elements } = parseWorkflowGraphElements(workflows);
     graphSyntaxHolder.innerHTML = JSON.stringify(elements, null, 2);
-    const { colors } = renderWorkflowGraph(elements, "#graph-holder", workflows);
+
+    const colors = getRandomHexColors(workflows.length);
+    console.log("Random colors: ", colors);
+
+    renderWorkflowGraph({ elements, graphHolderId, workflows, colors });
     renderLegends(workflows, colors);
   }
 }
 
 function changeBranchName(branchName: string) {
   console.log(branchName);
-  visualizeWorkflows(config, branchName);
+  visualizeWorkflows({ branchName });
 }
 
 // @ts-expect-error

@@ -1,13 +1,7 @@
 import { parse } from "yaml";
-import { CircleCIConfig, Filters } from "./types/circleci.js";
-import { WorkflowGraph } from "./types/mermaid.js";
-
-export async function loadCircleCIConfig(filePath: string): Promise<CircleCIConfig> {
-  const fileResponse = await fetch(filePath);
-  const fileContent = await fileResponse.text();
-  const config = parse(fileContent) as CircleCIConfig;
-  return config;
-}
+import { CircleCIConfig, Filters } from "../types/circleci.js";
+import { WorkflowGraph } from "../types/mermaid.js";
+import { ElementDefinition } from "cytoscape";
 
 function stringMatch(regex: string, text: string) {
   console.log(regex.replace(/^\//g, "").replace(/\/$/g, ""));
@@ -34,6 +28,13 @@ function shouldIncludeJob(filters?: Filters, branchName = "") {
   }
 }
 
+export async function loadCircleCIConfig(filePath: string): Promise<CircleCIConfig> {
+  const fileResponse = await fetch(filePath);
+  const fileContent = await fileResponse.text();
+  const config = parse(fileContent) as CircleCIConfig;
+  return config;
+}
+
 export function parseWorkflows(config: CircleCIConfig, branchName?: string): WorkflowGraph[] {
   console.log("config: ", config);
   const workflows = config.workflows;
@@ -57,4 +58,34 @@ export function parseWorkflows(config: CircleCIConfig, branchName?: string): Wor
 
     return { name: workflowName, dependencies };
   });
+}
+
+export function parseWorkflowGraphElements(workflows: WorkflowGraph[]) {
+  console.log("workflows: ", workflows);
+  const elements = workflows.reduce<ElementDefinition[]>((acc, workflow) => {
+    const jobNodes = workflow.dependencies.map((dependency) => {
+      return { data: { id: `${workflow.name}_${dependency.job}`, label: dependency.job } };
+    });
+    const dependencyNodes = workflow.dependencies
+      .map(({ job, dependsOn }) => {
+        if (dependsOn) {
+          return dependsOn.map((dependsOnItem) => ({
+            data: { source: `${workflow.name}_${dependsOnItem}`, target: `${workflow.name}_${job}` },
+          }));
+        } else {
+          return null;
+        }
+      })
+      .filter((d) => d !== null)
+      .flat();
+
+    acc.push(...jobNodes);
+    acc.push(...dependencyNodes);
+
+    return acc;
+  }, []);
+
+  return {
+    elements,
+  };
 }

@@ -1,40 +1,10 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import { WorkflowGraph } from "./types/mermaid.js";
+import { WorkflowGraph } from "../types/mermaid.js";
 import cytoscapeDagre from "cytoscape-dagre";
 
 cytoscape.use(cytoscapeDagre);
 
-export function getWorkflowGraphSyntax(workflows: WorkflowGraph[]) {
-  console.log("workflows: ", workflows);
-  const elements = workflows.reduce<ElementDefinition[]>((acc, workflow) => {
-    const jobNodes = workflow.dependencies.map((dependency) => {
-      return { data: { id: `${workflow.name}_${dependency.job}`, label: dependency.job } };
-    });
-    const dependencyNodes = workflow.dependencies
-      .map(({ job, dependsOn }) => {
-        if (dependsOn) {
-          return dependsOn.map((dependsOnItem) => ({
-            data: { source: `${workflow.name}_${dependsOnItem}`, target: `${workflow.name}_${job}` },
-          }));
-        } else {
-          return null;
-        }
-      })
-      .filter((d) => d !== null)
-      .flat();
-
-    acc.push(...jobNodes);
-    acc.push(...dependencyNodes);
-
-    return acc;
-  }, []);
-
-  return {
-    elements,
-  };
-}
-
-function getRandomHexColors(n: number): string[] {
+export function getRandomHexColors(n: number): string[] {
   const colors: string[] = [];
   const hueStep = 360 / n; // Divide the color wheel into n distinct parts
   for (let i = 0; i < n; i++) {
@@ -45,15 +15,22 @@ function getRandomHexColors(n: number): string[] {
   return colors;
 }
 
-export function renderWorkflowGraph(elements: ElementDefinition[], containerId: string, workflows: WorkflowGraph[]) {
+export function renderWorkflowGraph({
+  colors,
+  elements,
+  workflows,
+  graphHolderId,
+}: {
+  colors: string[];
+  elements: ElementDefinition[];
+  workflows: WorkflowGraph[];
+  graphHolderId: string;
+}) {
   console.log("elements: ", elements);
-  const container = document.querySelector<HTMLDivElement>(containerId);
+  const container = document.querySelector<HTMLDivElement>(graphHolderId);
   if (!container) {
     throw new Error("graph container not found.");
   }
-
-  const colors = getRandomHexColors(workflows.length);
-  console.log("Random colors: ", colors);
 
   cytoscape({
     container: container,
